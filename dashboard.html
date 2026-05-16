@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CloudSync — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dash-page">
+
+  <div class="bg-mesh"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">⬡</div>
+      <span class="brand-name">CloudSync</span>
+    </div>
+
+    <div class="user-pill">
+      <div class="user-avatar" id="user-initial">?</div>
+      <div class="user-info">
+        <div class="user-email" id="user-email">Loading…</div>
+        <div class="user-role">Password Vault</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-label">Filters</div>
+      <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">
+        <span class="nav-icon">🔐</span> All Passwords
+      </button>
+      <button class="filter-btn" data-filter="social" onclick="setFilter('social')">
+        <span class="nav-icon">💬</span> Social
+      </button>
+      <button class="filter-btn" data-filter="finance" onclick="setFilter('finance')">
+        <span class="nav-icon">💳</span> Finance
+      </button>
+      <button class="filter-btn" data-filter="work" onclick="setFilter('work')">
+        <span class="nav-icon">💼</span> Work
+      </button>
+      <button class="filter-btn" data-filter="shopping" onclick="setFilter('shopping')">
+        <span class="nav-icon">🛍</span> Shopping
+      </button>
+      <button class="filter-btn" data-filter="other" onclick="setFilter('other')">
+        <span class="nav-icon">📦</span> Other
+      </button>
+    </nav>
+
+    <button class="logout-btn" onclick="logout()">⎋ Sign Out</button>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main">
+    <header class="dash-header">
+      <div>
+        <h1 class="dash-title">Your Vault</h1>
+        <p class="dash-sub">Manage your passwords securely</p>
+      </div>
+      <button class="primary-btn add-btn" onclick="openAddModal()">+ Add Password</button>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-num" id="stat-total">0</div>
+        <div class="stat-label">Total Saved</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-num" id="stat-strong">0</div>
+        <div class="stat-label">Strong</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-num" id="stat-weak">0</div>
+        <div class="stat-label">Weak</div>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-bar">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Search by site or username…" oninput="doSearch(event)">
+    </div>
+
+    <!-- Passwords List -->
+    <div id="passwords-list" class="passwords-list">
+      <div class="loading-state">Loading vault…</div>
+    </div>
+  </main>
+
+  <!-- ─── Add Password Modal ─── -->
+  <div class="modal" id="add-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Add New Password</h3>
+        <button class="close-btn" onclick="closeModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="field-row">
+          <div class="field">
+            <label>Site / App Name *</label>
+            <input type="text" id="site-name" placeholder="e.g. Gmail, GitHub">
+          </div>
+          <div class="field">
+            <label>Username / Email</label>
+            <input type="text" id="site-user" placeholder="your@email.com">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Password *</label>
+          <div class="input-group">
+            <input type="text" id="pwd-input" placeholder="Enter or generate" oninput="checkStrength()">
+            <button class="eye-btn" type="button" onclick="generatePassword()">⚡ Gen</button>
+          </div>
+        </div>
+
+        <!-- Strength Bar -->
+        <div class="strength-wrap">
+          <div class="strength-track">
+            <div id="strength-bar" class="strength-fill"></div>
+          </div>
+          <div class="strength-info">
+            <span id="strength-label"></span>
+            <span id="crack-time"></span>
+          </div>
+        </div>
+
+        <!-- Generator Options -->
+        <div class="gen-options">
+          <label class="gen-label">Generator options</label>
+          <div class="gen-row">
+            <label class="check-label"><input type="checkbox" id="gen-upper" checked> A–Z</label>
+            <label class="check-label"><input type="checkbox" id="gen-numbers" checked> 0–9</label>
+            <label class="check-label"><input type="checkbox" id="gen-symbols" checked> !@#</label>
+            <div class="len-control">
+              <span>Length:</span>
+              <input type="number" id="gen-length" value="16" min="8" max="64">
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Category</label>
+            <select id="category">
+              <option value="social">Social</option>
+              <option value="finance">Finance</option>
+              <option value="work">Work</option>
+              <option value="shopping">Shopping</option>
+              <option value="other" selected>Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Notes</label>
+          <textarea id="notes" placeholder="Optional notes…" rows="2"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="ghost-btn" onclick="closeModal()">Cancel</button>
+        <button class="primary-btn" onclick="savePassword()">Save Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── View Password Modal ─── -->
+  <div class="modal" id="view-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Password Details</h3>
+        <button class="close-btn" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body view-details">
+        <div class="detail-row">
+          <span class="detail-label">Site</span>
+          <span class="detail-val" id="view-site"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Username</span>
+          <span class="detail-val" id="view-user"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Password</span>
+          <span class="detail-val mono" id="view-pwd"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Category</span>
+          <span class="detail-val" id="view-cat"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Notes</span>
+          <span class="detail-val" id="view-notes"></span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">Saved on</span>
+          <span class="detail-val" id="view-date"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="ghost-btn" onclick="closeModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal overlay click to close -->
+  <div id="toast" class="toast"></div>
+
+  <script src="supabase.js"></script>
+  <script src="passwords.js"></script>
+  <script>
+    window.onload = function() {
+      guardAuth();
+      const user = localStorage.getItem("cs_user");
+      document.getElementById("user-email").textContent = user;
+      document.getElementById("user-initial").textContent = user.charAt(0).toUpperCase();
+      loadPasswords();
+    };
+
+    function guardAuth() {
+      if (!localStorage.getItem("cs_user")) window.location.href = "index.html";
+    }
+
+    function logout() {
+      localStorage.removeItem("cs_user");
+      localStorage.removeItem("cs_uid");
+      window.location.href = "index.html";
+    }
+
+    // Close modal on backdrop click
+    document.querySelectorAll(".modal").forEach(m => {
+      m.addEventListener("click", e => { if (e.target === m) closeModal(); });
+    });
+  </script>
+</body>
+</html>
